@@ -1,9 +1,11 @@
-let login = prompt('Please, enter in system:', 'login'), pass = null;
+let login = prompt('Please, enter in system:', 'login'), 
+  pass = null,
+  exits = 'Вход отменён';
 
 function admin() {
   pass = prompt('Enter the password:', 'passwd');
-  (pass == null) ? alert('Вход отменён') : 
+  (pass == null) ? alert(exits) : 
   (pass == 'Чёрный Властелин') ? alert('Добро пожаловать!') : alert('Пароль неверен');
 }
 
-  (login == null) ? alert('Вход отменён') : (login == 'Админ') ? admin() : alert('Я вас не знаю');
+  (login == null) ? alert(exits) : (login == 'Админ') ? admin() : alert('Я вас не знаю');
