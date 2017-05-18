@@ -8,4 +8,4 @@ function admin() {
   (pass == 'Чёрный Властелин') ? alert('Добро пожаловать!') : alert('Пароль неверен');
 }
 
-  (login == null) ? alert(exits) : (login == 'Админ') ? admin() : alert('Я вас не знаю');
+(login == null) ? alert(exits) : (login == 'Админ') ? admin() : alert('Я вас не знаю');
