@@ -1,6 +1,5 @@
+let Planet = "Земля",
+let name = "Петя";
 
-let Earth = "Земля",
-  name = "Петя";
-
-console.log(Earth);
+console.log(Planet);
 console.log(name);
