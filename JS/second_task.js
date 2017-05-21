@@ -4,7 +4,7 @@ let message = 'Вход отменён';
 if (login == null) {
   alert(message);
 } else if (login == 'Админ') {
-    pass = prompt('Enter the password:', 'passwd');
+    let pass = prompt('Enter the password:', 'passwd');
     if (pass == null){
       alert(message);
     } else {
