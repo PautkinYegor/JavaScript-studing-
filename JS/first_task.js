@@ -1,4 +1,4 @@
-let Planet = "Земля",
+let Planet = "Земля";
 let name = "Петя";
 
 console.log(Planet);
