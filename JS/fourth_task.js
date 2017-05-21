@@ -1,16 +1,23 @@
-let begining = 2,
-  ending = 10;
+let begining = prompt('Введите начало диапазона');
+let ending = prompt('Введите конец диапазона');
 
-begining = prompt('Введите начало диапазона');
-ending = prompt('Введите конец диапазона');
-
-nextPrime:
-  for (let i = 2; i < +ending; i++) {
-
-    for (var j = 2; j < i; j++) {
-      if (i % j == 0) continue nextPrime;
+function Prime(n) {
+  let p = n > 1;
+  for (let j = 2; j * j <= n && p; ++j)
+    if (n % j == 0) {
+      p = false;
     }
-    if (i >= +begining) {
+  return p; 
+}
+
+if (isFinite(begining) && isFinite(ending)) {
+  begining = +begining;
+  ending = +ending;
+  for (let i = begining; i <= ending; ++i) {
+    if (Prime(i)) {
       console.log(i);
     }
   }
+} else {
+  console.log('Введён неверный интервал');
+}
