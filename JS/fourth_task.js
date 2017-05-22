@@ -10,9 +10,10 @@ function Prime(n) {
   return p; 
 }
 
-if (isFinite(begining) && isFinite(ending)) {
-  begining = +begining;
-  ending = +ending;
+  begining = parseInt(begining);
+  ending = parseInt(ending);
+
+if ((Number.isInteger(begining)) && (Number.isInteger(ending))) {
   for (let i = begining; i <= ending; ++i) {
     if (Prime(i)) {
       console.log(i);
