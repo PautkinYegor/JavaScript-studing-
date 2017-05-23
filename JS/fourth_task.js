@@ -5,14 +5,12 @@ function showPrime(n)
 {
   if (n > 1)
   {
-    for (let j = 2; j * j <= n; ++j)
+  for (let j = 2; j * j <= n; ++j)
+    if (n % j == 0)
     {
-      if (n % j == 0)
-      {
         return false;
-      }
-      return true;
     }
+      return true;
   }
 }
 
