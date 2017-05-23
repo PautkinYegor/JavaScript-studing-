@@ -6,7 +6,7 @@ let badWords = ['хэй', 'ихний', 'евошний', 'тамошний', '�
 for (let j = 0; j < badWords.length; ++j)
 {
   let result = badWords[j];
-  while (~text.indexOf(result))
+  while (text.indexOf(result) !== (-1))
   {
     text = text.replace(result, '***');
   }
