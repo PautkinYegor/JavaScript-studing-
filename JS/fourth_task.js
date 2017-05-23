@@ -1,7 +1,7 @@
 let begining = prompt('Введите начало диапазона');
 let ending = prompt('Введите конец диапазона');
 
-function Prime(n)
+function showPrime(n)
 {
   if (n > 1)
   {
