@@ -1,21 +1,24 @@
 //eye of lines
-
-function createImage()
+//without reverse
+function drawEye(startX, startY, revert)
 {
   let canvas = document.getElementById("canvas");
   let ctx = canvas.getContext("2d");
-  ctx.lineWidth = 2;
+  let width = 150;
+  startX = revert ? (startX + width) : startX;
+  let coef = revert ? -1 : 1;
+  ctx.lineWidth = 1;
   ctx.strokeStyle = "black";
   ctx.beginPath();
-  ctx.moveTo(20, 55);
-  ctx.bezierCurveTo(75, 25, 175, 50, 250, 75);
-  ctx.moveTo(20, 55);
-  ctx.quadraticCurveTo(100, 130, 250, 75);
-  ctx.moveTo(100, 42);
-  ctx.quadraticCurveTo(75, 75, 100, 95);
-  ctx.moveTo(180, 54);
-  ctx.quadraticCurveTo(195, 80, 170, 96);
+  ctx.moveTo(startX, startY);
+  ctx.bezierCurveTo(startX + 55, startY - 30, startX + 155, startY - 5, startX + 230, startY + 20);
+  ctx.moveTo(startX, startY);
+  ctx.quadraticCurveTo(startX + 80, startY + 75, startX + 230, startY + 20);
+  ctx.moveTo(startX + 80, startY - 13);
+  ctx.quadraticCurveTo(startX + 55, startY + 20, startX + 80, startY + 40);
+  ctx.moveTo(startX + 160, startY - 1);
+  ctx.quadraticCurveTo(startX + 175, startY + 25, startX + 150, startY + 41);
   ctx.stroke();
 }
 
-createImage();
+drawEye(30, 85, false);
