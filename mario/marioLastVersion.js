@@ -1,30 +1,6 @@
-/*
-Урок 1. 
 
-Первоисточник:
-http://habrahabr.ru/post/111385/
-
-В этой серии:
-- Примитивы - неудобно и долго. Есть же картинки!
-- Добавляем картинки
-- Изменяем размер картинок
-
-- Рисуем сложную сцену:
-  - спрайты, чтобы побыстрее
-  - нарезаем, увеличиваем
-*/
-
-  /*
-  Стоит отметить что загрузка изображения происходит сразу после присвоения объекту источника изображения,
-  и если оно не загрузится полностью к моменту вызова функции отрисовки, то оно попросту не будет нарисовано на холсте.
-
-  //drawImage(image, x, y, width, height)  //  параметры width, height меняют ширину и высоту изображения
-
-  drawImage(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight);
-  // Первый параметр указывает на изображение
-  // sx, sy, sWidth, sHeight указывают параметры фрагмента на изображение-источнике
-  // dx, dy, dWidth, dHeight ответственны за координаты отрисовки фрагмента на холсте
-  */
+//5 заведи и используй константные двумерные массивы для многотайловых объектов (но лучше реализуй функцию,  создающую эти массивы)
+//9 добавить в drawSpriteMap поддержку отрисовки карты любой размерности из заданных координат
 
 //Размер ячейки на карте
 const CELL_SIZE = 16;
@@ -32,126 +8,131 @@ const CS_WIDTH = 16;
 const CS_HEIGHT = 10;
 const ZOOM_COEFF = 4;
 
-//пути к изображениям
-const ground = 'img/block.png';
-const mario_person = 'img/mario_person.png';
-const coins = 'img/coins.png';
-const shrubs = 'img/shrub.png';
-const clouds = 'img/clouds.png';
-const sky = 'img/mario.png';
+//повторяющиеся элименты
+const backgroundSky = {x:2.5, y:9.2};
+const empty = {x:0, y:0};
+const ground = {x:3.88, y:5.8};
+const mario = {x:1.55, y:21.7};
+const coin = {x:4.22, y:14.3};
+const block_brick = {x:3.88, y:1};
+const block_iron = {x:3.88, y:2.12};
+
+// //объекты
+// function clouds() {
+//   return [
+//     [{x:4.12, y:23.5}, {x:5.12, y:23.5}, {x:6.12, y:23.5}, {x:7.12, y:23.5}],
+//     [{x:4.12, y:24.5}, {x:5.12, y:24.5}, {x:6.12, y:24.5}, {x:7.12, y:24.5}]
+//   ]
+// }
+
 
 //maps
 const map_sky = [
-  [{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22}], // 1ый ряд
-  [{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22}], // 2ой ряд
-  [{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22}], // 3ий ряд
-  [{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22}], // 4ый ряд
-  [{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22}], // 5ый ряд
-  [{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22}], // 6ой ряд
-  [{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22}], // 7ой ряд
-  [{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22}], // 8ой ряд
-  [{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22}], // 9ый ряд
-  [{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22},{x:19,y:22}]  // 10ый ряд
+  [backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky],  // 1ый ряд
+  [backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky],  // 2ой ряд
+  [backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky],  // 3ий ряд
+  [backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky],  // 4ый ряд
+  [backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky],  // 5ый ряд
+  [backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky],  // 6ой ряд
+  [backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky],  // 7ой ряд
+  [backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky],  // 8ой ряд
+  [backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky],  // 9ый ряд
+  [backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky]  // 10ый ряд
 ];
 const map_ground = [
-  [{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}], // 1ый ряд
-  [{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}], // 2ый ряд
-  [{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}], // 3ый ряд
-  [{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}], // 4ый ряд
-  [{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:1,y:1},{x:1,y:2.12},{x:1,y:1},{x:1,y:2.12},{x:1,y:1},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}], // 5ый ряд
-  [{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}], // 6ый ряд
-  [{x:0,y:0},{x:0,y:0},{x:1,y:1},{x:1,y:2.12},{x:1,y:1},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}], // 7ый ряд
-  [{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}], // 8ый ряд
-  [{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}], // 9ый ряд
-  [{x:1,y:5.8},{x:1,y:5.8},{x:1,y:5.8},{x:1,y:5.8},{x:1,y:5.8},{x:1,y:5.8},{x:1,y:5.8},{x:1,y:5.8},{x:1,y:5.8},{x:1,y:5.8},{x:1,y:5.8},{x:1,y:5.8},{x:1,y:5.8},{x:1,y:5.8},{x:1,y:5.8},{x:1,y:5.8}]  // 10ый ряд
+  [empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty],  // 1ый ряд
+  [empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty],  // 2ый ряд
+  [empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty],  // 3ый ряд
+  [empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty],  // 4ый ряд
+  [empty, empty, empty, empty, empty, empty, block_brick, block_iron, block_brick, block_iron, block_brick, empty, empty, empty, empty, empty],  // 5ый ряд
+  [empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty],  // 6ый ряд
+  [empty, empty, block_brick, block_iron, block_brick, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty],  // 7ый ряд
+  [empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty],  // 8ый ряд
+  [empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty],  // 9ый ряд
+  [ground, ground, ground, ground, ground, ground, ground, ground, ground, ground, ground, ground, ground, ground, ground, ground]  // 10ый ряд
 ];
 const map_mario = [
-  [{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}], // 1ый ряд
-  [{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}], // 2ый ряд
-  [{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}], // 3ый ряд
-  [{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}], // 4ый ряд
-  [{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}], // 5ый ряд
-  [{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}], // 6ый ряд
-  [{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}], // 7ый ряд
-  [{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}], // 8ый ряд
-  [{x:0,y:0},{x:1,y:1},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}], // 9ый ряд
-  [{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}]  // 10ый ряд
+  [empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty],  // 1ый ряд
+  [empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty],  // 2ый ряд
+  [empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty],  // 3ый ряд
+  [empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty],  // 4ый ряд
+  [empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty],  // 5ый ряд
+  [empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty],  // 6ый ряд
+  [empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty],  // 7ый ряд
+  [empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty],  // 8ый ряд
+  [empty, mario, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty],  // 9ый ряд
+  [empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty]  // 10ый ряд
 ];
 const map_coins = [
-  [{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}], // 1ый ряд
-  [{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}], // 2ый ряд
-  [{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}], // 3ый ряд
-  [{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0.7,y:0.9},{x:0,y:0},{x:0.7,y:0.9},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}], // 4ый ряд
-  [{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}], // 5ый ряд
-  [{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}], // 6ый ряд
-  [{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}], // 7ый ряд
-  [{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}], // 8ый ряд
-  [{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}], // 9ый ряд
-  [{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}]  // 10ый ряд
+  [empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty],  // 1ый ряд
+  [empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty],  // 2ый ряд
+  [empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty],  // 3ый ряд
+  [empty, empty, empty, empty, empty, empty, empty, coin, empty, coin, empty, empty, empty, empty, empty, empty],  // 4ый ряд
+  [empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty],  // 5ый ряд
+  [empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty],  // 6ый ряд
+  [empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty],  // 7ый ряд
+  [empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty],  // 8ый ряд
+  [empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty],  // 9ый ряд
+  [empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty]  // 10ый ряд
 ];
-const map_shrubs = [
-  [{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}], // 1ый ряд
-  [{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}], // 2ый ряд
-  [{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}], // 3ый ряд
-  [{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}], // 4ый ряд
-  [{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}], // 5ый ряд
-  [{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}], // 6ый ряд
-  [{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}], // 7ый ряд
-  [{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}], // 8ый ряд
-  [{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:1,y:1},{x:2,y:1},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:7.2,y:1},{x:8.2,y:1},{x:9.2,y:1},{x:10.2,y:1},{x:0,y:0}], // 9ый ряд
-  [{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}]  // 10ый ряд
-];
-const map_clouds = [
-  [{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:4.1,y:1},{x:5.1,y:1},{x:6.1,y:1},{x:7.1,y:1},{x:0,y:0},{x:0,y:0},{x:0,y:0}], // 1ый ряд
-  [{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:4.1,y:2},{x:5.1,y:2},{x:6.1,y:2},{x:7.1,y:2},{x:0,y:0},{x:0,y:0},{x:0,y:0}], // 2ый ряд
-  [{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}], // 3ый ряд
-  [{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}], // 4ый ряд
-  [{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}], // 5ый ряд
-  [{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}], // 6ый ряд
-  [{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}], // 7ый ряд
-  [{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}], // 8ый ряд
-  [{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}], // 9ый ряд
-  [{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}]  // 10ый ряд
+
+const map_shrubsAndClouds = [
+  [empty, empty, empty, empty, empty, empty, empty, empty, empty, {x:4.12, y:23.5}, {x:5.12, y:23.5}, {x:6.12, y:23.5}, {x:7.12, y:23.5}, empty, empty, empty],  // 1ый ряд
+  [empty, empty, empty, empty, empty, empty, empty, empty, empty, {x:4.12, y:24.5}, {x:5.12, y:24.5}, {x:6.12, y:24.5}, {x:7.12, y:24.5}, empty, empty, empty],  // 2ый ряд
+  [empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty],  // 3ый ряд
+  [empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty],  // 4ый ряд
+  [empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty],  // 5ый ряд
+  [empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty],  // 6ый ряд
+  [empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty],  // 7ый ряд
+  [empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty],  // 8ый ряд
+  [empty, empty, empty, {x:1.08, y:19.15}, {x:2.08, y:19.15}, empty, empty, empty, empty, empty, empty, {x:7.28, y:19.15}, {x:8.28, y:19.15}, {x:9.28, y:19.15}, empty, empty],  // 9ый ряд
+  [empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty]  // 10ый ряд
 ];
 
 function start() {
-  let example;
-  example = document.getElementById("example");
-  ctx            = example.getContext('2d');
-  example.width  = 1024;
-  example.height = 640;
+  let example = document.getElementById("example");
+  ctx = example.getContext('2d');
 
   // Размер холста равный 8х8 клеток
   example.width  = CS_WIDTH * CELL_SIZE * ZOOM_COEFF;
   example.height = CS_HEIGHT * CELL_SIZE * ZOOM_COEFF;
 
-  //раскомментируйте код, если хотите посмотреть нарисованную сцену
-  drawSpriteMap(map_sky, sky, ctx, 1, (ctx) => {
-    drawSpriteMap(map_ground, ground, ctx, 1, (ctx) => {
-      drawSpriteMap(map_mario, mario_person, ctx, 0);
-      drawSpriteMap(map_coins, coins, ctx, 0);
-      drawSpriteMap(map_shrubs, shrubs, ctx, 0);
-      drawSpriteMap(map_clouds, clouds, ctx, 0);
+  //раскомментируйте код,  если хотите посмотреть нарисованную сцену
+  drawSpriteMap(map_sky, ctx, (ctx) => {
+    drawSpriteMap(map_ground, ctx, (ctx) => {
+      drawSpriteMap(map_mario, ctx);
+      drawSpriteMap(map_coins, ctx);
+      drawSpriteMap(map_shrubsAndClouds, ctx);
     });
   });
 }
 
-function drawSpriteMap(maps, SpritePath, ctx, cCb, completeCallback) {
+function calculate(value) {
+  return (CELL_SIZE * ZOOM_COEFF * value);
+}
+
+function drawSpriteMap(map, ctx, completeCallback) { // object, mapX, mapY,
   const pic = new Image();
-  let map = maps;
-  pic.onload = function() {
-    for (let j = 0 ; j < CS_WIDTH; j ++) {
-      for (let i = 0; i < CS_HEIGHT; i ++) {
-        let xWhereToStartClipping = (map[i][j].x - 1) * CELL_SIZE;
-        let yWhereToStartClipping = (map[i][j].y - 1) * CELL_SIZE;
-        let clippedImageWidth = CELL_SIZE;
-        let clippedImageHeight = CELL_SIZE;
+  pic.onload = () => {
+    // if (object) {
+    //   for (let row = mapX; row < map[0].length; row ++) {
+    //     for (let column = mapY; column < map.length; column++) {
+    //       map[row][column] = object[]
+    //     }
+    //   }
+    // }
+    for (let row = 0; row < map[0].length; row ++) {
+      for (let column = 0; column < map.length; column ++) {
+        let xWhereToStartClipping = (map[column][row].x - 1) * CELL_SIZE;
+        let yWhereToStartClipping = (map[column][row].y - 1) * CELL_SIZE;
+        const clippedImageWidth = CELL_SIZE;
+        const clippedImageHeight = CELL_SIZE;
 
 
-        let xWhereToPlaceImage = j * CELL_SIZE * ZOOM_COEFF;
-        let yWhereToPlaceImage = i * CELL_SIZE * ZOOM_COEFF;
-        let imageWidth = CELL_SIZE * ZOOM_COEFF;
-        let imageHeight = CELL_SIZE * ZOOM_COEFF;
+        let xWhereToPlaceImage = calculate(row);
+        let yWhereToPlaceImage = calculate(column);
+        const imageWidth = calculate(1);
+        const imageHeight = calculate(1);
 
         // перебираем все значения массива 'карта' и в зависимости от координат вырисовываем нужный нам фрагмент
         ctx.drawImage(pic,
@@ -165,9 +146,9 @@ function drawSpriteMap(maps, SpritePath, ctx, cCb, completeCallback) {
           imageHeight);
       }
     }
-      if (cCb == 1) {
+      if (completeCallback) {
         completeCallback(ctx);
     }
-  }
-  pic.src = SpritePath;
+  };
+  pic.src = 'img/all.png';
 }
