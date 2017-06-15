@@ -1,5 +1,3 @@
-
-//5 заведи и используй константные двумерные массивы для многотайловых объектов (но лучше реализуй функцию,  создающую эти массивы)
 //9 добавить в drawSpriteMap поддержку отрисовки карты любой размерности из заданных координат
 
 //Размер ячейки на карте
@@ -12,19 +10,18 @@ const ZOOM_COEFF = 4;
 const backgroundSky = {x:2.5, y:9.2};
 const empty = {x:0, y:0};
 const ground = {x:3.88, y:5.8};
-const mario = {x:1.55, y:21.7};
 const coin = {x:4.22, y:14.3};
 const block_brick = {x:3.88, y:1};
 const block_iron = {x:3.88, y:2.12};
 
-// //объекты
-// function clouds() {
-//   return [
-//     [{x:4.12, y:23.5}, {x:5.12, y:23.5}, {x:6.12, y:23.5}, {x:7.12, y:23.5}],
-//     [{x:4.12, y:24.5}, {x:5.12, y:24.5}, {x:6.12, y:24.5}, {x:7.12, y:24.5}]
-//   ]
-// }
-
+//объекты
+const clouds = [
+  [{x:4.12, y:23.5}, {x:5.12, y:23.5}, {x:6.12, y:23.5}, {x:7.12, y:23.5}],
+  [{x:4.12, y:24.5}, {x:5.12, y:24.5}, {x:6.12, y:24.5}, {x:7.12, y:24.5}]
+];
+const mario = [
+  [{x:1.55, y:21.7}]
+];
 
 //maps
 const map_sky = [
@@ -39,6 +36,7 @@ const map_sky = [
   [backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky],  // 9ый ряд
   [backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky, backgroundSky]  // 10ый ряд
 ];
+
 const map_ground = [
   [empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty],  // 1ый ряд
   [empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty],  // 2ый ряд
@@ -51,18 +49,7 @@ const map_ground = [
   [empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty],  // 9ый ряд
   [ground, ground, ground, ground, ground, ground, ground, ground, ground, ground, ground, ground, ground, ground, ground, ground]  // 10ый ряд
 ];
-const map_mario = [
-  [empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty],  // 1ый ряд
-  [empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty],  // 2ый ряд
-  [empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty],  // 3ый ряд
-  [empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty],  // 4ый ряд
-  [empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty],  // 5ый ряд
-  [empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty],  // 6ый ряд
-  [empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty],  // 7ый ряд
-  [empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty],  // 8ый ряд
-  [empty, mario, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty],  // 9ый ряд
-  [empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty]  // 10ый ряд
-];
+
 const map_coins = [
   [empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty],  // 1ый ряд
   [empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty],  // 2ый ряд
@@ -98,11 +85,10 @@ function start() {
   example.height = CS_HEIGHT * CELL_SIZE * ZOOM_COEFF;
 
   //раскомментируйте код,  если хотите посмотреть нарисованную сцену
-  drawSpriteMap(map_sky, ctx, (ctx) => {
-    drawSpriteMap(map_ground, ctx, (ctx) => {
-      drawSpriteMap(map_mario, ctx);
-      drawSpriteMap(map_coins, ctx);
-      drawSpriteMap(map_shrubsAndClouds, ctx);
+  drawSpriteMap(map_sky, ctx, false, 0, 0, 0, (ctx) => {
+    drawSpriteMap(map_ground, ctx, true, mario, 1, 8, (ctx) => {
+      drawSpriteMap(map_coins, ctx, false);
+      drawSpriteMap(map_shrubsAndClouds, ctx, true, clouds, 4, 0);
     });
   });
 }
@@ -111,23 +97,16 @@ function calculate(value) {
   return (CELL_SIZE * ZOOM_COEFF * value);
 }
 
-function drawSpriteMap(map, ctx, completeCallback) { // object, mapX, mapY,
+function drawSpriteMap(map, ctx, supplement, object, mapX, mapY, completeCallback) { // object, mapX, mapY,
   const pic = new Image();
   pic.onload = () => {
-    // if (object) {
-    //   for (let row = mapX; row < map[0].length; row ++) {
-    //     for (let column = mapY; column < map.length; column++) {
-    //       map[row][column] = object[]
-    //     }
-    //   }
-    // }
-    for (let row = 0; row < map[0].length; row ++) {
-      for (let column = 0; column < map.length; column ++) {
+
+    for (let column = 0; column < map.length; column ++) {
+      for (let row = 0; row < map[0].length; row ++) {
         let xWhereToStartClipping = (map[column][row].x - 1) * CELL_SIZE;
         let yWhereToStartClipping = (map[column][row].y - 1) * CELL_SIZE;
         const clippedImageWidth = CELL_SIZE;
         const clippedImageHeight = CELL_SIZE;
-
 
         let xWhereToPlaceImage = calculate(row);
         let yWhereToPlaceImage = calculate(column);
@@ -146,8 +125,39 @@ function drawSpriteMap(map, ctx, completeCallback) { // object, mapX, mapY,
           imageHeight);
       }
     }
-      if (completeCallback) {
-        completeCallback(ctx);
+    if (supplement) {
+      row = mapX;
+      column = mapY;
+      for (let columnO = 0; columnO < object.length; columnO ++) {
+        for (let rowO = 0; rowO < object[0].length; rowO ++) {
+          let xWhereToStartClipping = (object[columnO][rowO].x - 1) * CELL_SIZE;
+          let yWhereToStartClipping = (object[columnO][rowO].y - 1) * CELL_SIZE;
+          const clippedImageWidth = CELL_SIZE;
+          const clippedImageHeight = CELL_SIZE;
+
+          let xWhereToPlaceImage = calculate(row);
+          let yWhereToPlaceImage = calculate(column);
+          const imageWidth = calculate(1);
+          const imageHeight = calculate(1);
+
+          // перебираем все значения массива 'карта' и в зависимости от координат вырисовываем нужный нам фрагмент
+          ctx.drawImage(pic,
+            xWhereToStartClipping,
+            yWhereToStartClipping,
+            clippedImageWidth,
+            clippedImageHeight,
+            xWhereToPlaceImage,
+            yWhereToPlaceImage,
+            imageWidth,
+            imageHeight);
+          row ++;
+        }
+        row = mapX;
+        column ++;
+      }
+    }
+    if (completeCallback) {
+      completeCallback(ctx);
     }
   };
   pic.src = 'img/all.png';
