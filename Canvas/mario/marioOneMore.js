@@ -1,11 +1,11 @@
 //9 добавить в drawSpriteMap поддержку отрисовки карты любой размерности из заданных координат
 // - избавиться от передачи completeCallback и загрузки спрайта в функции - drawSpriteMap, т.к. спрайт теперь общий и может грузиться только единовременно на старте
-// - рисовать каждый объект отдельно в заданных координатах, а не пытаться рисовать карту и объект в drawSpriteMap
+// + рисовать каждый объект отдельно в заданных координатах, а не пытаться рисовать карту и объект в drawSpriteMap
 // + константные координаты тайлов в спрайтах именовать заглавными буквами
 // + не смешивать camelCase и snake_case в именовании переменных и методов
-// - разбить имеющиеся карты на отдельные объекты там, где это соотвествует здравому смыслу
+// + разбить имеющиеся карты на отдельные объекты там, где это соотвествует здравому смыслу
 // + вместо тайлов неба можно изначально заливать кадр соотвествующим цветом
-// - function drawSpriteMap(spriteMap, offsetX, offsetY, canvasContext)
+// !+/- function drawSpriteMap(spriteMap, offsetX, offsetY, canvasContext)
 
 //Размер ячейки на карте
 const CELL_SIZE = 16;
@@ -74,19 +74,6 @@ const mapGround = [
   [GROUND, GROUND, GROUND, GROUND, GROUND, GROUND, GROUND, GROUND, GROUND, GROUND, GROUND, GROUND, GROUND, GROUND, GROUND, GROUND]  // 10ый ряд
 ];
 
-const mapShrubsAndClouds = [
-  [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, CLOUD1, CLOUD2, CLOUD3, CLOUD4, EMPTY, EMPTY, EMPTY],  // 1ый ряд
-  [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, CLOUD5, CLOUD6, CLOUD7, CLOUD8, EMPTY, EMPTY, EMPTY],  // 2ый ряд
-  [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],  // 3ый ряд
-  [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],  // 4ый ряд
-  [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],  // 5ый ряд
-  [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],  // 6ый ряд
-  [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],  // 7ый ряд
-  [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],  // 8ый ряд
-  [EMPTY, EMPTY, EMPTY, SHRUB11, SHRUB12, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, SHRUB21, SHRUB22, SHRUB23, EMPTY, EMPTY],  // 9ый ряд
-  [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY]  // 10ый ряд
-];
-
 function start() {
   let canvas = document.getElementById("marioScene");
   ctx = canvas.getContext('2d');
@@ -97,24 +84,36 @@ function start() {
   canvas.height = HEIGHT * CELL_SIZE * ZOOM_COEFF;
 
   //раскомментируйте код,  если хотите посмотреть нарисованную сцену
-    drawSpriteMap(mapGround, ctx, true, mario(), 1, 8, (ctx) => {
-      drawSpriteMap(mapShrubsAndClouds, ctx, true, clouds(), 4, 0);
+    drawSpriteMap(mapGround, ctx, 0, 0, (ctx) => { // true, mario(), 1, 8,
+      drawSpriteMap(mario(), ctx, 1, 8);
+      drawSpriteMap(clouds(), ctx, 9, 0);
+      drawSpriteMap(clouds(), ctx, 4, 0);
+      drawSpriteMap(coin(), ctx, 7, 3);
+      drawSpriteMap(coin(), ctx, 9, 3);
+      drawSpriteMap(shrub1(), ctx, 3, 8);
+      drawSpriteMap(shrub2(), ctx, 11, 8);
     });
 }
+
+// function picture(completeCallback) {
+//   pic.onload = completeCallback;
+//   pic.src = 'img/all.png';
+// }
 
 function calculate(value) {
   return (CELL_SIZE * ZOOM_COEFF * value);
 }
 
-function drawSpriteMap(map, ctx, supplement, object, mapX, mapY, completeCallback) {
+function drawSpriteMap(spriteMap, ctx, offsetX, offsetY, completeCallback) { //supplement, object,
   // - function drawSpriteMap(spriteMap, offsetX, offsetY, canvasContext)
   const pic = new Image();
   pic.onload = () => {
-
-    for (let column = 0; column < map.length; column ++) {
-      for (let row = 0; row < map[0].length; row ++) {
-        let xWhereToStartClipping = (map[column][row].x - 1) * CELL_SIZE;
-        let yWhereToStartClipping = (map[column][row].y - 1) * CELL_SIZE;
+    let row = offsetX;
+    let column = offsetY;
+    for (let columnSM = 0; columnSM < spriteMap.length; columnSM ++) {
+      for (let rowSM = 0; rowSM < spriteMap[0].length; rowSM ++) {
+        let xWhereToStartClipping = (spriteMap[columnSM][rowSM].x - 1) * CELL_SIZE;
+        let yWhereToStartClipping = (spriteMap[columnSM][rowSM].y - 1) * CELL_SIZE;
         const clippedImageWidth = CELL_SIZE;
         const clippedImageHeight = CELL_SIZE;
 
@@ -133,38 +132,10 @@ function drawSpriteMap(map, ctx, supplement, object, mapX, mapY, completeCallbac
           yWhereToPlaceImage,
           imageWidth,
           imageHeight);
+        row ++;
       }
-    }
-    if (supplement) {
-      row = mapX;
-      column = mapY;
-      for (let columnO = 0; columnO < object.length; columnO ++) {
-        for (let rowO = 0; rowO < object[0].length; rowO ++) {
-          let xWhereToStartClipping = (object[columnO][rowO].x - 1) * CELL_SIZE;
-          let yWhereToStartClipping = (object[columnO][rowO].y - 1) * CELL_SIZE;
-          const clippedImageWidth = CELL_SIZE;
-          const clippedImageHeight = CELL_SIZE;
-
-          let xWhereToPlaceImage = calculate(row);
-          let yWhereToPlaceImage = calculate(column);
-          const imageWidth = calculate(1);
-          const imageHeight = calculate(1);
-
-          // перебираем все значения массива 'карта' и в зависимости от координат вырисовываем нужный нам фрагмент
-          ctx.drawImage(pic,
-            xWhereToStartClipping,
-            yWhereToStartClipping,
-            clippedImageWidth,
-            clippedImageHeight,
-            xWhereToPlaceImage,
-            yWhereToPlaceImage,
-            imageWidth,
-            imageHeight);
-          row ++;
-        }
-        row = mapX;
-        column ++;
-      }
+      row = offsetX;
+      column ++;
     }
     if (completeCallback) {
       completeCallback(ctx);
