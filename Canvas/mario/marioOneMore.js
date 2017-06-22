@@ -1,11 +1,11 @@
 //9 добавить в drawSpriteMap поддержку отрисовки карты любой размерности из заданных координат
-// - избавиться от передачи completeCallback и загрузки спрайта в функции - drawSpriteMap, т.к. спрайт теперь общий и может грузиться только единовременно на старте
+// + избавиться от передачи completeCallback и загрузки спрайта в функции - drawSpriteMap, т.к. спрайт теперь общий и может грузиться только единовременно на старте
 // + рисовать каждый объект отдельно в заданных координатах, а не пытаться рисовать карту и объект в drawSpriteMap
 // + константные координаты тайлов в спрайтах именовать заглавными буквами
 // + не смешивать camelCase и snake_case в именовании переменных и методов
 // + разбить имеющиеся карты на отдельные объекты там, где это соотвествует здравому смыслу
 // + вместо тайлов неба можно изначально заливать кадр соотвествующим цветом
-// !+/- function drawSpriteMap(spriteMap, offsetX, offsetY, canvasContext)
+// + function drawSpriteMap(spriteMap, offsetX, offsetY, canvasContext)
 
 //Размер ячейки на карте
 const CELL_SIZE = 16;
@@ -59,6 +59,7 @@ function shrub2() {
     [SHRUB21, SHRUB22, SHRUB23]
   ]
 }
+const pic = new Image();
 
 //maps
 const mapGround = [
@@ -83,63 +84,56 @@ function start() {
   canvas.width  = WIDTH * CELL_SIZE * ZOOM_COEFF;
   canvas.height = HEIGHT * CELL_SIZE * ZOOM_COEFF;
 
-  //раскомментируйте код,  если хотите посмотреть нарисованную сцену
-    drawSpriteMap(mapGround, ctx, 0, 0, (ctx) => { // true, mario(), 1, 8,
-      drawSpriteMap(mario(), ctx, 1, 8);
-      drawSpriteMap(clouds(), ctx, 9, 0);
-      drawSpriteMap(clouds(), ctx, 4, 0);
-      drawSpriteMap(coin(), ctx, 7, 3);
-      drawSpriteMap(coin(), ctx, 9, 3);
-      drawSpriteMap(shrub1(), ctx, 3, 8);
-      drawSpriteMap(shrub2(), ctx, 11, 8);
+    loadPicture((ctx) => {
+      drawSpriteMap(mapGround, 0, 0, ctx);
+      drawSpriteMap(mario(), 1, 8, ctx);
+      drawSpriteMap(clouds(), 9, 0, ctx);
+      drawSpriteMap(clouds(), 4, 0, ctx);
+      drawSpriteMap(coin(), 7, 3, ctx);
+      drawSpriteMap(coin(), 9, 3, ctx);
+      drawSpriteMap(shrub1(), 3, 8, ctx);
+      drawSpriteMap(shrub2(), 11, 8, ctx);
     });
 }
 
-// function picture(completeCallback) {
-//   pic.onload = completeCallback;
-//   pic.src = 'img/all.png';
-// }
+function loadPicture(completeCallback) {
+  pic.onload = () => {
+    completeCallback(ctx);
+  };
+  pic.src = 'img/all.png';
+}
 
 function calculate(value) {
   return (CELL_SIZE * ZOOM_COEFF * value);
 }
 
-function drawSpriteMap(spriteMap, ctx, offsetX, offsetY, completeCallback) { //supplement, object,
-  // - function drawSpriteMap(spriteMap, offsetX, offsetY, canvasContext)
-  const pic = new Image();
-  pic.onload = () => {
-    let row = offsetX;
-    let column = offsetY;
-    for (let columnSM = 0; columnSM < spriteMap.length; columnSM ++) {
-      for (let rowSM = 0; rowSM < spriteMap[0].length; rowSM ++) {
-        let xWhereToStartClipping = (spriteMap[columnSM][rowSM].x - 1) * CELL_SIZE;
-        let yWhereToStartClipping = (spriteMap[columnSM][rowSM].y - 1) * CELL_SIZE;
-        const clippedImageWidth = CELL_SIZE;
-        const clippedImageHeight = CELL_SIZE;
+function drawSpriteMap(spriteMap, offsetX, offsetY, ctx) {
+  let row = offsetX;
+  let column = offsetY;
+  for (let columnSM = 0; columnSM < spriteMap.length; columnSM ++) {
+    for (let rowSM = 0; rowSM < spriteMap[0].length; rowSM ++) {
+      let xWhereToStartClipping = (spriteMap[columnSM][rowSM].x - 1) * CELL_SIZE;
+      let yWhereToStartClipping = (spriteMap[columnSM][rowSM].y - 1) * CELL_SIZE;
+      const clippedImageWidth = CELL_SIZE;
+      const clippedImageHeight = CELL_SIZE;
 
-        let xWhereToPlaceImage = calculate(row);
-        let yWhereToPlaceImage = calculate(column);
-        const imageWidth = calculate(1);
-        const imageHeight = calculate(1);
+      let xWhereToPlaceImage = calculate(row);
+      let yWhereToPlaceImage = calculate(column);
+      const imageWidth = calculate(1);
+      const imageHeight = calculate(1);
 
-        // перебираем все значения массива 'карта' и в зависимости от координат вырисовываем нужный нам фрагмент
-        ctx.drawImage(pic,
-          xWhereToStartClipping,
-          yWhereToStartClipping,
-          clippedImageWidth,
-          clippedImageHeight,
-          xWhereToPlaceImage,
-          yWhereToPlaceImage,
-          imageWidth,
-          imageHeight);
-        row ++;
-      }
-      row = offsetX;
-      column ++;
+      ctx.drawImage(pic,
+        xWhereToStartClipping,
+        yWhereToStartClipping,
+        clippedImageWidth,
+        clippedImageHeight,
+        xWhereToPlaceImage,
+        yWhereToPlaceImage,
+        imageWidth,
+        imageHeight);
+      row ++;
     }
-    if (completeCallback) {
-      completeCallback(ctx);
-    }
-  };
-  pic.src = 'img/all.png';
+    row = offsetX;
+    column ++;
+  }
 }
