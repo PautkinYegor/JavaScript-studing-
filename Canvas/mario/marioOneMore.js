@@ -59,7 +59,6 @@ function shrub2() {
     [SHRUB21, SHRUB22, SHRUB23]
   ]
 }
-const pic = new Image();
 
 //maps
 const mapGround = [
@@ -75,39 +74,38 @@ const mapGround = [
   [GROUND, GROUND, GROUND, GROUND, GROUND, GROUND, GROUND, GROUND, GROUND, GROUND, GROUND, GROUND, GROUND, GROUND, GROUND, GROUND]  // 10ый ряд
 ];
 
-function start() {
-  let canvas = document.getElementById("marioScene");
-  ctx = canvas.getContext('2d');
-  canvas.style.backgroundColor = '#2f95ff';
+// function start() {
+//   let canvas = document.getElementById("marioScene");
+//   ctx = canvas.getContext('2d');
+//   canvas.style.backgroundColor = '#2f95ff';
+//   const picture = new Image();
+//
+//   // Размер холста равный 8х8 клеток
+//   canvas.width  = WIDTH * CELL_SIZE * ZOOM_COEFF;
+//   canvas.height = HEIGHT * CELL_SIZE * ZOOM_COEFF;
+//
+//     loadPicture(picture, (ctx) => {
+//       drawSpriteMap(picture, mapGround, 0, 0, ctx);
+//       drawSpriteMap(picture, mario(), 1, 8, ctx);
+//       drawSpriteMap(picture, clouds(), 9, 0, ctx);
+//       drawSpriteMap(picture, clouds(), 4, 0, ctx);
+//       drawSpriteMap(picture, coin(), 7, 3, ctx);
+//       drawSpriteMap(picture, coin(), 9, 3, ctx);
+//       drawSpriteMap(picture, shrub1(), 3, 8, ctx);
+//       drawSpriteMap(picture, shrub2(), 11, 8, ctx);
+//     });
+// }
 
-  // Размер холста равный 8х8 клеток
-  canvas.width  = WIDTH * CELL_SIZE * ZOOM_COEFF;
-  canvas.height = HEIGHT * CELL_SIZE * ZOOM_COEFF;
-
-    loadPicture((ctx) => {
-      drawSpriteMap(mapGround, 0, 0, ctx);
-      drawSpriteMap(mario(), 1, 8, ctx);
-      drawSpriteMap(clouds(), 9, 0, ctx);
-      drawSpriteMap(clouds(), 4, 0, ctx);
-      drawSpriteMap(coin(), 7, 3, ctx);
-      drawSpriteMap(coin(), 9, 3, ctx);
-      drawSpriteMap(shrub1(), 3, 8, ctx);
-      drawSpriteMap(shrub2(), 11, 8, ctx);
-    });
-}
-
-function loadPicture(completeCallback) {
-  pic.onload = () => {
-    completeCallback(ctx);
-  };
-  pic.src = 'img/all.png';
+function loadPicture(picture, pathImg, ctx, completeCallback) {
+  picture.onload = completeCallback(ctx);
+  picture.src = pathImg;
 }
 
 function calculate(value) {
   return (CELL_SIZE * ZOOM_COEFF * value);
 }
 
-function drawSpriteMap(spriteMap, offsetX, offsetY, ctx) {
+function drawSpriteMap(picture, spriteMap, offsetX, offsetY, ctx) {
   let row = offsetX;
   let column = offsetY;
   for (let columnSM = 0; columnSM < spriteMap.length; columnSM ++) {
@@ -122,7 +120,7 @@ function drawSpriteMap(spriteMap, offsetX, offsetY, ctx) {
       const imageWidth = calculate(1);
       const imageHeight = calculate(1);
 
-      ctx.drawImage(pic,
+      ctx.drawImage(picture,
         xWhereToStartClipping,
         yWhereToStartClipping,
         clippedImageWidth,
@@ -136,4 +134,53 @@ function drawSpriteMap(spriteMap, offsetX, offsetY, ctx) {
     row = offsetX;
     column ++;
   }
+}
+
+//           gameloop:
+function startGame() {
+  const canvas = document.getElementById('marioScene');
+  canvas.style.backgroundColor = '#2f95ff';
+  canvas.width  = WIDTH * CELL_SIZE * ZOOM_COEFF;
+  canvas.height = HEIGHT * CELL_SIZE * ZOOM_COEFF;
+
+  const ctx = canvas.getContext('2d');
+  const spriteImg = new Image();
+
+  const CLOUD_X_MIN = -4;
+  const CLOUD_X_MAX = WIDTH + 4;
+  let cloudX = 0;
+
+  let lastTimestamp = Date.now();
+  let timeSinceLastMove = 0;
+  function gameLoop() {
+    const currentTimestamp = Date.now();
+    const deltaTime = currentTimestamp - lastTimestamp;
+    console.log(1000 / deltaTime);
+    lastTimestamp = currentTimestamp;
+
+    timeSinceLastMove += deltaTime;
+
+    //update model
+    //move by 1 per 1000 ms
+    const cloudDX = Math.floor(timeSinceLastMove / 5);
+    timeSinceLastMove -= cloudDX * 5;
+    if (cloudDX > 0) {
+      cloudX += cloudDX * 0.01;
+      cloudX = (cloudX < CLOUD_X_MAX) ? cloudX : CLOUD_X_MIN;
+    }
+
+    //draw model
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawSpriteMap(spriteImg, mapGround, 0, 0, ctx);
+    drawSpriteMap(spriteImg, mario(), 1, 8, ctx);
+    drawSpriteMap(spriteImg, clouds(), cloudX, 0, ctx);
+    drawSpriteMap(spriteImg, coin(), 7, 3, ctx);
+    drawSpriteMap(spriteImg, coin(), 9, 3, ctx);
+    drawSpriteMap(spriteImg, shrub1(), 3, 8, ctx);
+    drawSpriteMap(spriteImg, shrub2(), 11, 8, ctx);
+
+    setTimeout(() => requestAnimationFrame(gameLoop), 10); //400 * Math.random()
+  }
+
+  loadPicture(spriteImg, 'img/all.png', ctx, gameLoop);
 }
