@@ -51,31 +51,30 @@ let cells = [
   createCell(13), createCell(14), createCell(15), createCell(0),
 ];
 
-function determinationOfWin() {
-  let flag = true;
-  while (flag) {
-    for (let column = 0; column < cells.length; ++column) {
-      let y = Math.floor(cells[column].value / 4);
-      let x = Math.floor(cells[column].value - y * 4 - 1);
-      if (x === -1) {
-        x = 3;
-        if (cells[column].value === 0) {
-          y = 3;
-        } else {
-          y = y - 1;
-        }
-      }
-      x = x * CELL_SIZE;
-      y = y * CELL_SIZE;
-      if ((cells[column].x === x) && (cells[column].y === y)) {
-        flag = true;
+function determinationOfWin(clicks) {
+  let flag = 1;
+  for (let column = 0; column < cells.length && flag === 1; ++column) {
+    let y = Math.floor(cells[column].value / 4);
+    let x = Math.floor(cells[column].value - y * 4 - 1);
+    if (x === -1) {
+      x = 3;
+      if (cells[column].value === 0) {
+        y = 3;
       } else {
-        flag = false;
-        break;
+        y = y - 1;
       }
     }
+    x = x * CELL_SIZE;
+    y = y * CELL_SIZE;
+    if ((cells[column].x === x) && (cells[column].y === y)) {
+      flag = 1;
+    } else {
+      flag = 0;
+    }
   }
-  return flag;
+  if (flag === 1) {
+    alert('Вы собрали пятнашки за ' + clicks + ' клик!');
+  }
 }
 
 // canvas.onmousemove = (event) {
@@ -146,9 +145,7 @@ function startGame() {
       cells[column0].x = columnClick;
       cells[column0].y = rowClick;
       ++clicks;
-      if (determinationOfWin) {
-        alert('Вы собрали пятнашки за ' + clicks + ' клик!');
-      }
+      determinationOfWin(clicks);
     }
   };
   shiftCells(30);
