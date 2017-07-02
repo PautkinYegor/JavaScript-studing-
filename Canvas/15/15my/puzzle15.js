@@ -129,6 +129,8 @@ function startGame() {
   canvas.style.margin = 10;
   canvas.width = CANVAS_WIDTH;
   canvas.height = CANVAS_HEIGHT;
+  let clicks = 0;
+
   //let lastTimestamp = Date.now();
   canvas.onclick = (event) => {
     let columnClick = Math.floor((event.pageX - 15)/CELL_SIZE) * CELL_SIZE;
@@ -143,8 +145,9 @@ function startGame() {
       cells[column1].y = y0;
       cells[column0].x = columnClick;
       cells[column0].y = rowClick;
+      ++clicks;
       if (determinationOfWin) {
-        alert('YOU ARE WELL DONE :D');
+        alert('Вы собрали пятнашки за ' + clicks + ' клик!');
       }
     }
   };
