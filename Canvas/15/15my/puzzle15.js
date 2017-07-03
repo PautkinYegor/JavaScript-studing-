@@ -52,8 +52,8 @@ let cells = [
 ];
 
 function determinationOfWin(clicks) {
-  let flag = 1;
-  for (let column = 0; column < cells.length && flag === 1; ++column) {
+  let flag = true;
+  for (let column = 0; column < cells.length && flag === true; ++column) {
     let y = Math.floor(cells[column].value / 4);
     let x = Math.floor(cells[column].value - y * 4 - 1);
     if (x === -1) {
@@ -66,13 +66,9 @@ function determinationOfWin(clicks) {
     }
     x = x * CELL_SIZE;
     y = y * CELL_SIZE;
-    if ((cells[column].x === x) && (cells[column].y === y)) {
-      flag = 1;
-    } else {
-      flag = 0;
-    }
+    ((cells[column].x === x) && (cells[column].y === y)) ? flag = true : flag = false;
   }
-  if (flag === 1) {
+  if (flag === true) {
     alert('Вы собрали пятнашки за ' + clicks + ' клик!');
   }
 }
