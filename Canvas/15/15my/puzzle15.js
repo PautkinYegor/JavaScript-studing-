@@ -1,20 +1,25 @@
 const CANVAS_WIDTH = 480;
 const CANVAS_HEIGHT = 480;
 const CELL_SIZE = 119;
+const FILL_SIZE = 4;
+let animation = false;
+const SQUARE_SPEED = 0.2;
 
-function getEmptyCell() { // функция возвращает координаты пустой клетки(внутри массива)
-  for (let column0 = 0; column0 < 16; ++column0) {
-    if (cells[column0].isEmpty) {
-      return{"x0" : cells[column0].x, "y0" : cells[column0].y, "column0" : column0};
+function getEmptyCellIndex() { // функция возвращает индекс пустой клетки(внутри массива)
+  for (let index = 0; index < FILL_SIZE * FILL_SIZE; ++index) {
+    if (cells[index].isEmpty) {
+      return index;
     }
   }
 }
 
-function getClick(clickX, clickY) { // функция возвращает координаты активной клетки(внутри массива)
-  for (let column1 = 0; column1 < 16; ++column1) {
-    if ((clickX === cells[column1].x) &&
-      (clickY === cells[column1].y)) {
-      return {"column1" : column1};
+function getActiveIndex(event) { // функция возвращает индекс активной клетки(внутри массива)
+  let clickX = Math.floor((event.pageX - 15)/CELL_SIZE) * CELL_SIZE;
+  let clickY = Math.floor((event.pageY - 15)/CELL_SIZE) * CELL_SIZE;
+  for (let index = 0; index < FILL_SIZE * FILL_SIZE; ++index) {
+    if ((clickX === cells[index].x) &&
+      (clickY === cells[index].y)) {
+      return index;
     }
   }
 }
@@ -25,22 +30,40 @@ function createCell(num) {
   let x = Math.floor(num - y * 4 - 1);
   if (x === -1) {
     x = 3;
-    if (num === 0) {
-      isEmpty = true;
-      y = 3;
-    } else {
-      y = y - 1;
-    }
+    y = (num === 0) ? 3 : y - 1;
+    isEmpty = (num === 0) ? true : isEmpty;
   }
   x = x * CELL_SIZE;
   y = y * CELL_SIZE;
-  console.log(y, ':', x, '   num ', num);
   return {
     isEmpty: isEmpty,
     value: num,
     isSelected: false,
     x: x,
     y: y,
+    animationDirectionX: 0,
+    animationDirectionY: 0,
+  }
+}
+
+function determinationMovement(activeCell, x0, y0) {
+  if (activeCell.x - CELL_SIZE === x0) {
+    activeCell.animationDirectionX = -CELL_SIZE;
+  } else if (activeCell.x + CELL_SIZE === x0) {
+    activeCell.animationDirectionX = CELL_SIZE;
+  }
+  if (activeCell.y - CELL_SIZE === y0) {
+    activeCell.animationDirectionY = -CELL_SIZE;
+  } else if (activeCell.y + CELL_SIZE === y0){
+    activeCell.animationDirectionY = CELL_SIZE;
+  }
+}
+
+function getCellWithAnimation() {
+  for (let index = 0; index < cells.length; ++index) {
+    if ((cells[index].animationDirectionX !== 0) || (cells[index].animationDirectionY !== 0)) {
+      return index;
+    }
   }
 }
 
@@ -58,11 +81,7 @@ function determinationOfWin(clicks) {
     let x = Math.floor(cells[column].value - y * 4 - 1);
     if (x === -1) {
       x = 3;
-      if (cells[column].value === 0) {
-        y = 3;
-      } else {
-        y = y - 1;
-      }
+      y = (cells[column].value === 0) ? 3 : y - 1;
     }
     x = x * CELL_SIZE;
     y = y * CELL_SIZE;
@@ -82,8 +101,8 @@ function determinationOfWin(clicks) {
 // }
 function shiftCells(stepsCount) {
   for (let step = 0; step < stepsCount; ++step) {
-    let number1 = Math.floor(Math.random() * 16);
-    let number2 = Math.floor(Math.random() * 16);
+    let number1 = Math.floor(Math.random() * FILL_SIZE * FILL_SIZE);
+    let number2 = Math.floor(Math.random() * FILL_SIZE * FILL_SIZE);
     let num1X = cells[number1].x;
     let num1Y = cells[number1].y;
     cells[number1].x = cells[number2].x;
@@ -93,20 +112,29 @@ function shiftCells(stepsCount) {
   }
 }
 
-function drawCells(ctx) {
+function drawCells(ctx, locationSquare, activeCell) {
+  let differenceOfLocation = (locationSquare > 0) ? (CELL_SIZE - locationSquare) : (CELL_SIZE + locationSquare);
   ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
   for (let column = 0; column < cells.length; ++column) {
     if (!cells[column].isEmpty) {
+      let cellX = cells[column].x;
+      let cellY = cells[column].y;
       const sizeOfSquare = 116;
+      if (cells[column] === activeCell) {
+        if ((activeCell.animationDirectionY === CELL_SIZE) || (activeCell.animationDirectionY === -CELL_SIZE)) {
+          cellY = (activeCell.animationDirectionY === CELL_SIZE) ? (cellY - differenceOfLocation) : (cellY + differenceOfLocation);
+        } else if ((activeCell.animationDirectionX === CELL_SIZE) || (activeCell.animationDirectionX === -CELL_SIZE)) {
+          cellX = (activeCell.animationDirectionX === CELL_SIZE) ? (cellX - differenceOfLocation) : (cellX + differenceOfLocation);
+        }
+      }
       ctx.fillStyle = "silver";
-      ctx.fillRect(3 + cells[column].x/CELL_SIZE * (sizeOfSquare + 3),
-          3 + cells[column].y/CELL_SIZE * (sizeOfSquare + 3), sizeOfSquare, sizeOfSquare);
+      ctx.fillRect(3 + cellX, 3 + cellY, sizeOfSquare, sizeOfSquare);
       ctx.font = "italic 40pt Times New Roman";
       ctx.fillStyle = "black";
       const fontWidth = 60;
-      const fontForY = 80 + cells[column].y/CELL_SIZE * sizeOfSquare;
-      const fontForX1 = 40 + cells[column].x/CELL_SIZE * sizeOfSquare;
-      const fontForX2 = 50 + cells[column].x/CELL_SIZE * sizeOfSquare;
+      const fontForY = 80 + cellY / CELL_SIZE * sizeOfSquare;
+      const fontForX1 = 40 + cellX / CELL_SIZE * sizeOfSquare;
+      const fontForX2 = 50 + cellX / CELL_SIZE * sizeOfSquare;
       if (cells[column].value >= 10) {
         ctx.fillText('' + cells[column].value, fontForX1, fontForY, fontWidth);
       } else if (cells[column].value <= 10) {
@@ -115,7 +143,6 @@ function drawCells(ctx) {
     }
   }
 }
-
 
 function startGame() {
   const canvas = document.getElementById("puzzle15");
@@ -126,38 +153,74 @@ function startGame() {
   canvas.height = CANVAS_HEIGHT;
   let clicks = 0;
 
-  //let lastTimestamp = Date.now();
   canvas.onclick = (event) => {
-    let columnClick = Math.floor((event.pageX - 15)/CELL_SIZE) * CELL_SIZE;
-    let rowClick = Math.floor((event.pageY - 15)/CELL_SIZE) * CELL_SIZE;
-    let column1 = getClick(columnClick, rowClick).column1;
-    let x0 = getEmptyCell().x0;
-    let y0 = getEmptyCell().y0;
-    let column0 = getEmptyCell().column0;
-    if (((columnClick - CELL_SIZE === x0 || columnClick + CELL_SIZE === x0) && rowClick === y0)
-        || ((rowClick - CELL_SIZE === y0 || rowClick + CELL_SIZE === y0) && columnClick === x0)) {
-      cells[column1].x = x0;
-      cells[column1].y = y0;
-      cells[column0].x = columnClick;
-      cells[column0].y = rowClick;
+    if (animation === true) {return;}
+    let activeIndex = getActiveIndex(event);
+    let activeCell = cells[activeIndex];
+    let emptyCellIndex = getEmptyCellIndex();
+    let emptyCell = cells[emptyCellIndex];
+    let emptyCellX = emptyCell.x;
+    let emptyCellY = emptyCell.y;
+    if (((activeCell.x - CELL_SIZE === emptyCellX || activeCell.x + CELL_SIZE === emptyCellX) && activeCell.y === emptyCellY)
+       || ((activeCell.y - CELL_SIZE === emptyCellY || activeCell.y + CELL_SIZE === emptyCellY) && activeCell.x === emptyCellX)) {
+      determinationMovement(activeCell, emptyCellX, emptyCellY);
+      animation = true;
+      emptyCell.x = activeCell.x;
+      emptyCell.y = activeCell.y;
+      activeCell.x = emptyCellX;
+      activeCell.y = emptyCellY;
       ++clicks;
       determinationOfWin(clicks);
     }
   };
+  let activeIndex = getCellWithAnimation();
+  let activeCell = cells[activeIndex];
+
+  let lastTimestamp = Date.now();
   shiftCells(30);
-  function gameLoop(ctx) {
-    // const delta = timestamp - lastTimestamp;
-    // lastTimestamp = timestamp;
+
+  function gameLoop(ctx, locationSquare, timestamp, activeCell) {
+    const delta = timestamp - lastTimestamp;
+    lastTimestamp = timestamp;
+    let moving = 0;
+    if (animation === true) {
+      activeIndex = getCellWithAnimation();
+      activeCell = cells[activeIndex];
+      let activeY = activeCell.animationDirectionY;
+      let activeX = activeCell.animationDirectionX;
+      if (!(activeX === 0) || !(activeY === 0)) {
+        moving = (!(activeX === 0)) ? activeX : activeY;
+
+        //move by 1 per 1000 ms
+        let squareMove = delta * SQUARE_SPEED;
+        if (squareMove > 0) {
+          if (moving > 0) {
+            locationSquare = locationSquare + squareMove;
+            locationSquare = (locationSquare < CELL_SIZE) ? locationSquare : CELL_SIZE;
+          } else {
+            locationSquare = locationSquare - squareMove;
+            locationSquare = (locationSquare > -CELL_SIZE) ? locationSquare : -CELL_SIZE;
+          }
+          console.log('locationSquare:', locationSquare);
+          if ((locationSquare === CELL_SIZE) || (locationSquare === -CELL_SIZE)) {
+            locationSquare = 0;
+            activeCell.animationDirectionY = 0;
+            activeCell.animationDirectionX = 0;
+            animation = false;
+          }
+        }
+      }
+    }
 
     //draw model
-    drawCells(ctx);
+    drawCells(ctx, locationSquare, activeCell);
 
-    requestAnimationFrame(()=> {
-      gameLoop(ctx);
+    requestAnimationFrame((timestamp)=> {
+      gameLoop(ctx, locationSquare, timestamp, activeCell);
     });
   }
-  requestAnimationFrame(()=> {
-    gameLoop(ctx);
+  requestAnimationFrame((timestamp)=> {
+    gameLoop(ctx, 0, timestamp, activeCell);
   });
 }
 
