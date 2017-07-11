@@ -14,8 +14,8 @@ function getEmptyCellIndex() { // функция возвращает индек
 }
 
 function getActiveIndex(event) { // функция возвращает индекс активной клетки(внутри массива)
-  let clickX = Math.floor((event.pageX - 15)/CELL_SIZE) * CELL_SIZE;
-  let clickY = Math.floor((event.pageY - 15)/CELL_SIZE) * CELL_SIZE;
+  let clickX = Math.floor((event.pageX - 15) / CELL_SIZE) * CELL_SIZE;
+  let clickY = Math.floor((event.pageY - 15) / CELL_SIZE) * CELL_SIZE;
   for (let index = 0; index < FILL_SIZE * FILL_SIZE; ++index) {
     if ((clickX === cells[index].x) &&
       (clickY === cells[index].y)) {
@@ -25,9 +25,11 @@ function getActiveIndex(event) { // функция возвращает инде
 }
 
 function createCell(num) {
+  let animationDirectionX = 0;
+  let animationDirectionY = 0;
   let isEmpty = false;
-  let y = Math.floor(num/4);
-  let x = Math.floor(num - y * 4 - 1);
+  let y = Math.floor(num / FILL_SIZE);
+  let x = Math.floor(num - y * FILL_SIZE - 1);
   if (x === -1) {
     x = 3;
     y = (num === 0) ? 3 : y - 1;
@@ -39,10 +41,40 @@ function createCell(num) {
     isEmpty: isEmpty,
     value: num,
     isSelected: false,
+    animationDirectionX: animationDirectionX,
+    animationDirectionY: animationDirectionY,
+    futureX: x,
+    futureY: y,
+    move: (deltaTimestamp) => {
+      let index = num - 1;
+      index = (index === -1) ? 15 : index;
+      let squareMove = deltaTimestamp * SQUARE_SPEED;
+      if ((cells[index].animationDirectionX !== 0) || (cells[index].animationDirectionY !== 0)) {
+        if (cells[index].animationDirectionX > 0) {
+          cells[index].animationDirectionX = cells[index].animationDirectionX - squareMove;
+          cells[index].x = cells[index].x + squareMove;
+          cells[index].animationDirectionX = (cells[index].animationDirectionX < 0) ? 0 : cells[index].animationDirectionX;
+          cells[index].x = (cells[index].animationDirectionX === 0) ? cells[index].futureX : cells[index].x;
+        } else if (cells[index].animationDirectionX < 0) {
+          cells[index].animationDirectionX = cells[index].animationDirectionX + squareMove;
+          cells[index].x = cells[index].x - squareMove;
+          cells[index].animationDirectionX = (cells[index].animationDirectionX > 0) ? 0 : cells[index].animationDirectionX;
+          cells[index].x = (cells[index].animationDirectionX === 0) ? cells[index].futureX : cells[index].x;
+        } else if (cells[index].animationDirectionY > 0) {
+          cells[index].animationDirectionY = cells[index].animationDirectionY - squareMove;
+          cells[index].y = cells[index].y + squareMove;
+          cells[index].animationDirectionY = (cells[index].animationDirectionY < 0) ? 0 : cells[index].animationDirectionY;
+          cells[index].y = (cells[index].animationDirectionY === 0) ? cells[index].futureY : cells[index].y;
+        } else if (cells[index].animationDirectionY < 0) {
+          cells[index].animationDirectionY = cells[index].animationDirectionY + squareMove;
+          cells[index].y = cells[index].y - squareMove;
+          cells[index].animationDirectionY = (cells[index].animationDirectionY > 0) ? 0 : cells[index].animationDirectionY;
+          cells[index].y = (cells[index].animationDirectionY === 0) ? cells[index].futureY : cells[index].y;
+        }
+      }
+    },
     x: x,
     y: y,
-    animationDirectionX: 0,
-    animationDirectionY: 0,
   }
 }
 
@@ -59,14 +91,6 @@ function determinationMovement(activeCell, x0, y0) {
   }
 }
 
-function getCellWithAnimation() {
-  for (let index = 0; index < cells.length; ++index) {
-    if ((cells[index].animationDirectionX !== 0) || (cells[index].animationDirectionY !== 0)) {
-      return index;
-    }
-  }
-}
-
 let cells = [
   createCell(1), createCell(2), createCell(3), createCell(4),
   createCell(5), createCell(6), createCell(7), createCell(8),
@@ -74,21 +98,21 @@ let cells = [
   createCell(13), createCell(14), createCell(15), createCell(0),
 ];
 
-function determinationOfWin(clicks) {
+function determinationOfWin(quantityClicks) {
   let flag = true;
-  for (let column = 0; column < cells.length && flag === true; ++column) {
-    let y = Math.floor(cells[column].value / 4);
-    let x = Math.floor(cells[column].value - y * 4 - 1);
+  for (let index = 0; index < cells.length && flag === true; ++index) {
+    let y = Math.floor(cells[index].value / FILL_SIZE);
+    let x = Math.floor(cells[index].value - y * FILL_SIZE - 1);
     if (x === -1) {
       x = 3;
-      y = (cells[column].value === 0) ? 3 : y - 1;
+      y = (cells[index].value === 0) ? 3 : y - 1;
     }
     x = x * CELL_SIZE;
     y = y * CELL_SIZE;
-    ((cells[column].x === x) && (cells[column].y === y)) ? flag = true : flag = false;
+    ((cells[index].x === x) && (cells[index].y === y)) ? flag = true : flag = false;
   }
   if (flag === true) {
-    alert('Вы собрали пятнашки за ' + clicks + ' клик!');
+    alert('Вы собрали пятнашки за ' + quantityClicks + ' клик!');
   }
 }
 
@@ -97,36 +121,28 @@ function determinationOfWin(clicks) {
 // 	const plateIndex = convertToPlateIndex(coords.x, coords.y);
 //
 // 	hideSelection() //выключает выделение у всех элементов
-// 	select(plateIndex.row, plateIndex.column); //включает выделение у элемента
+// 	select(plateIndex.row, plateIndex.index); //включает выделение у элемента
 // }
 function shiftCells(stepsCount) {
   for (let step = 0; step < stepsCount; ++step) {
-    let number1 = Math.floor(Math.random() * FILL_SIZE * FILL_SIZE);
-    let number2 = Math.floor(Math.random() * FILL_SIZE * FILL_SIZE);
-    let num1X = cells[number1].x;
-    let num1Y = cells[number1].y;
-    cells[number1].x = cells[number2].x;
-    cells[number1].y = cells[number2].y;
-    cells[number2].x = num1X;
-    cells[number2].y = num1Y;
+    let firstNumber = Math.floor(Math.random() * FILL_SIZE * FILL_SIZE);
+    let secondNumber = Math.floor(Math.random() * FILL_SIZE * FILL_SIZE);
+    let firstNumberX = cells[firstNumber].x;
+    let firstNumberY = cells[firstNumber].y;
+    cells[firstNumber].x = cells[secondNumber].x;
+    cells[firstNumber].y = cells[secondNumber].y;
+    cells[secondNumber].x = firstNumberX;
+    cells[secondNumber].y = firstNumberY;
   }
 }
 
-function drawCells(ctx, locationSquare, activeCell) {
-  let differenceOfLocation = (locationSquare > 0) ? (CELL_SIZE - locationSquare) : (CELL_SIZE + locationSquare);
+function drawCell(ctx) {
   ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-  for (let column = 0; column < cells.length; ++column) {
-    if (!cells[column].isEmpty) {
-      let cellX = cells[column].x;
-      let cellY = cells[column].y;
+  for (let index = 0; index < cells.length; ++index) {
+    if (!cells[index].isEmpty) {
+      let cellX = cells[index].x;
+      let cellY = cells[index].y;
       const sizeOfSquare = 116;
-      if (cells[column] === activeCell) {
-        if ((activeCell.animationDirectionY === CELL_SIZE) || (activeCell.animationDirectionY === -CELL_SIZE)) {
-          cellY = (activeCell.animationDirectionY === CELL_SIZE) ? (cellY - differenceOfLocation) : (cellY + differenceOfLocation);
-        } else if ((activeCell.animationDirectionX === CELL_SIZE) || (activeCell.animationDirectionX === -CELL_SIZE)) {
-          cellX = (activeCell.animationDirectionX === CELL_SIZE) ? (cellX - differenceOfLocation) : (cellX + differenceOfLocation);
-        }
-      }
       ctx.fillStyle = "silver";
       ctx.fillRect(3 + cellX, 3 + cellY, sizeOfSquare, sizeOfSquare);
       ctx.font = "italic 40pt Times New Roman";
@@ -135,13 +151,25 @@ function drawCells(ctx, locationSquare, activeCell) {
       const fontForY = 80 + cellY / CELL_SIZE * sizeOfSquare;
       const fontForX1 = 40 + cellX / CELL_SIZE * sizeOfSquare;
       const fontForX2 = 50 + cellX / CELL_SIZE * sizeOfSquare;
-      if (cells[column].value >= 10) {
-        ctx.fillText('' + cells[column].value, fontForX1, fontForY, fontWidth);
-      } else if (cells[column].value <= 10) {
-        ctx.fillText('' + cells[column].value, fontForX2, fontForY, fontWidth);
+      if (cells[index].value >= 10) {
+        ctx.fillText('' + cells[index].value, fontForX1, fontForY, fontWidth);
+      } else if (cells[index].value <= 10) {
+        ctx.fillText('' + cells[index].value, fontForX2, fontForY, fontWidth);
       }
     }
   }
+}
+
+function checkAnimation(deltaTimestamp) {
+  let flag = false;
+  for (let index = 0; index < cells.length && flag === false; ++index) {
+    cells[index].move(deltaTimestamp);
+    if ((cells[index].animationDirectionX !== 0) || (cells[index].animationDirectionY !== 0)) {
+      flag = true;
+    }
+  }
+  animation = flag;
+  console.log('checkAnimation:', animation);
 }
 
 function startGame() {
@@ -151,76 +179,54 @@ function startGame() {
   canvas.style.margin = 10;
   canvas.width = CANVAS_WIDTH;
   canvas.height = CANVAS_HEIGHT;
-  let clicks = 0;
+  let quantityClicks = 0;
+
+  shiftCells(50);
 
   canvas.onclick = (event) => {
-    if (animation === true) {return;}
+    if (animation === true) {
+      return;
+    }
     let activeIndex = getActiveIndex(event);
     let activeCell = cells[activeIndex];
     let emptyCellIndex = getEmptyCellIndex();
     let emptyCell = cells[emptyCellIndex];
     let emptyCellX = emptyCell.x;
     let emptyCellY = emptyCell.y;
-    if (((activeCell.x - CELL_SIZE === emptyCellX || activeCell.x + CELL_SIZE === emptyCellX) && activeCell.y === emptyCellY)
-       || ((activeCell.y - CELL_SIZE === emptyCellY || activeCell.y + CELL_SIZE === emptyCellY) && activeCell.x === emptyCellX)) {
-      determinationMovement(activeCell, emptyCellX, emptyCellY);
+    const moveXLeftAvailable  = ((activeCell.x - CELL_SIZE === emptyCell.x) && (activeCell.y === emptyCell.y));
+    const moveXRightAvailable = ((activeCell.x + CELL_SIZE === emptyCell.x) && (activeCell.y === emptyCell.y));
+    const moveYUpAvailable    = ((activeCell.y - CELL_SIZE === emptyCell.y) && (activeCell.x === emptyCell.x));
+    const moveYDownAvailable  = ((activeCell.y + CELL_SIZE === emptyCell.y) && (activeCell.x === emptyCell.x));
+    if (moveXLeftAvailable || moveXRightAvailable || moveYDownAvailable || moveYUpAvailable) {
+      determinationMovement(activeCell, emptyCell.x, emptyCell.y);
       animation = true;
       emptyCell.x = activeCell.x;
       emptyCell.y = activeCell.y;
-      activeCell.x = emptyCellX;
-      activeCell.y = emptyCellY;
-      ++clicks;
-      determinationOfWin(clicks);
+      activeCell.futureX = emptyCellX;
+      activeCell.futureY = emptyCellY;
+      ++quantityClicks;
     }
   };
-  let activeIndex = getCellWithAnimation();
-  let activeCell = cells[activeIndex];
 
   let lastTimestamp = Date.now();
-  shiftCells(30);
 
-  function gameLoop(ctx, locationSquare, timestamp, activeCell) {
-    const delta = timestamp - lastTimestamp;
+  function gameLoop(ctx, timestamp) {
+    const deltaTimestamp = timestamp - lastTimestamp;
     lastTimestamp = timestamp;
-    let moving = 0;
-    if (animation === true) {
-      activeIndex = getCellWithAnimation();
-      activeCell = cells[activeIndex];
-      let activeY = activeCell.animationDirectionY;
-      let activeX = activeCell.animationDirectionX;
-      if (!(activeX === 0) || !(activeY === 0)) {
-        moving = (!(activeX === 0)) ? activeX : activeY;
-
-        //move by 1 per 1000 ms
-        let squareMove = delta * SQUARE_SPEED;
-        if (squareMove > 0) {
-          if (moving > 0) {
-            locationSquare = locationSquare + squareMove;
-            locationSquare = (locationSquare < CELL_SIZE) ? locationSquare : CELL_SIZE;
-          } else {
-            locationSquare = locationSquare - squareMove;
-            locationSquare = (locationSquare > -CELL_SIZE) ? locationSquare : -CELL_SIZE;
-          }
-          console.log('locationSquare:', locationSquare);
-          if ((locationSquare === CELL_SIZE) || (locationSquare === -CELL_SIZE)) {
-            locationSquare = 0;
-            activeCell.animationDirectionY = 0;
-            activeCell.animationDirectionX = 0;
-            animation = false;
-          }
-        }
-      }
-    }
+    checkAnimation(deltaTimestamp);
 
     //draw model
-    drawCells(ctx, locationSquare, activeCell);
+    drawCell(ctx);
+    //check Win
+    determinationOfWin(quantityClicks);
 
     requestAnimationFrame((timestamp)=> {
-      gameLoop(ctx, locationSquare, timestamp, activeCell);
+      gameLoop(ctx, timestamp);
     });
   }
+
   requestAnimationFrame((timestamp)=> {
-    gameLoop(ctx, 0, timestamp, activeCell);
+    gameLoop(ctx, timestamp);
   });
 }
 
