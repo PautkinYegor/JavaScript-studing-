@@ -113,6 +113,7 @@ function determinationOfWin(quantityClicks) {
   }
   if (flag === true) {
     alert('Вы собрали пятнашки за ' + quantityClicks + ' клик!');
+    startGame();
   }
 }
 
@@ -169,7 +170,6 @@ function checkAnimation(deltaTimestamp) {
     }
   }
   animation = flag;
-  console.log('checkAnimation:', animation);
 }
 
 function startGame() {
