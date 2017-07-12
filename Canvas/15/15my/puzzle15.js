@@ -3,7 +3,7 @@ const CANVAS_HEIGHT = 480;
 const CELL_SIZE = 119;
 const FILL_SIZE = 4;
 let animation = false;
-const SQUARE_SPEED = 0.2;
+const SQUARE_SPEED = 1;
 
 function getEmptyCellIndex() { // функция возвращает индекс пустой клетки(внутри массива)
   for (let index = 0; index < FILL_SIZE * FILL_SIZE; ++index) {
@@ -113,27 +113,47 @@ function determinationOfWin(quantityClicks) {
   }
   if (flag === true) {
     alert('Вы собрали пятнашки за ' + quantityClicks + ' клик!');
-    startGame();
+    location.reload();
   }
 }
 
-// canvas.onmousemove = (event) {
-// 	const coords = convertToGameFieldCoords(event.layerX, event.layerY);
-// 	const plateIndex = convertToPlateIndex(coords.x, coords.y);
-//
-// 	hideSelection() //выключает выделение у всех элементов
-// 	select(plateIndex.row, plateIndex.index); //включает выделение у элемента
-// }
+function getCellIndex(x, y) {
+  for (let index = 0; index < cells.length; ++index) {
+    if ((x === cells[index].x) && (y === cells[index].y)) {
+      return index;
+    }
+  }
+}
+
 function shiftCells(stepsCount) {
   for (let step = 0; step < stepsCount; ++step) {
-    let firstNumber = Math.floor(Math.random() * FILL_SIZE * FILL_SIZE);
-    let secondNumber = Math.floor(Math.random() * FILL_SIZE * FILL_SIZE);
-    let firstNumberX = cells[firstNumber].x;
-    let firstNumberY = cells[firstNumber].y;
-    cells[firstNumber].x = cells[secondNumber].x;
-    cells[firstNumber].y = cells[secondNumber].y;
-    cells[secondNumber].x = firstNumberX;
-    cells[secondNumber].y = firstNumberY;
+    let randomNumber = Math.floor(Math.random() * FILL_SIZE);
+    let emptyCellIndex = 15;
+    if (randomNumber === 0) {
+      let indexActiveCell = getCellIndex(cells[emptyCellIndex].x - CELL_SIZE, cells[emptyCellIndex].y);
+      if (indexActiveCell !== undefined) {
+        cells[emptyCellIndex].x = cells[emptyCellIndex].x - CELL_SIZE;
+        cells[indexActiveCell].x = cells[indexActiveCell].x + CELL_SIZE;
+      }
+    } else if (randomNumber === 1) {
+      let indexActiveCell = getCellIndex(cells[emptyCellIndex].x + CELL_SIZE, cells[emptyCellIndex].y);
+      if (indexActiveCell !== undefined) {
+        cells[emptyCellIndex].x = cells[emptyCellIndex].x + CELL_SIZE;
+        cells[indexActiveCell].x = cells[indexActiveCell].x - CELL_SIZE;
+      }
+    } else if (randomNumber === 2) {
+      let indexActiveCell = getCellIndex(cells[emptyCellIndex].x, cells[emptyCellIndex].y + CELL_SIZE);
+      if (indexActiveCell !== undefined) {
+        cells[emptyCellIndex].y = cells[emptyCellIndex].y + CELL_SIZE;
+        cells[indexActiveCell].y = cells[indexActiveCell].y - CELL_SIZE;
+      }
+    } else if (randomNumber === 3) {
+      let indexActiveCell = getCellIndex(cells[emptyCellIndex].x, cells[emptyCellIndex].y - CELL_SIZE);
+      if (indexActiveCell !== undefined) {
+        cells[emptyCellIndex].y = cells[emptyCellIndex].y - CELL_SIZE;
+        cells[indexActiveCell].y = cells[indexActiveCell].y + CELL_SIZE;
+      }
+    }
   }
 }
 
@@ -181,7 +201,7 @@ function startGame() {
   canvas.height = CANVAS_HEIGHT;
   let quantityClicks = 0;
 
-  shiftCells(50);
+  shiftCells(300);
 
   canvas.onclick = (event) => {
     if (animation === true) {
